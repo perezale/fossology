@@ -33,6 +33,7 @@ COPY ./src/pkgagent/mod_deps ./src/pkgagent/
 COPY ./src/scheduler/mod_deps ./src/scheduler/
 COPY ./src/ununpack/mod_deps ./src/ununpack/
 COPY ./src/wget_agent/mod_deps ./src/wget_agent/
+COPY ./src/snippet_scan/mod_deps ./src/snippet_scan/
 
 RUN mkdir -p /fossology/dependencies-for-runtime \
  && cp -R /fossology/src /fossology/utils /fossology/dependencies-for-runtime/
