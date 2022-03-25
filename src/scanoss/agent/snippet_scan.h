@@ -43,7 +43,7 @@ extern PGconn* db_conn;         ///< the connection to Database
 
 int ProcessUpload(long upload_pk);
 void Usage(char *Name);
-int runScan(char *path,unsigned char ** detected);
+int runScan(char *path, unsigned char **licenses, unsigned char *purl,unsigned char *url, unsigned char *matchType, unsigned char *oss_lines, unsigned char *filePath);
 
 
 #endif /*  _SNIPPET_SCAN_H */

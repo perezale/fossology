@@ -31,7 +31,7 @@ DIRS = \
 	reso \
 	reuser \
 	scheduler \
-	snippet_scan \
+	scanoss \
 	softwareHeritage \
 	spasht \
 	spdx2 \

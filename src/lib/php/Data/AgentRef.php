@@ -35,7 +35,7 @@ class AgentRef
     'scancode' => 'S',
     'spasht' => 'Sp',
     'reso' => 'Rs',
-    'snippet_scan' => 'Sc'
+    'scanoss' => 'Sc'
   );
   /**
    * @var int

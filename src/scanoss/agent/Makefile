@@ -31,7 +31,7 @@ OBJECTS_SCANNER=$(SOURCES_SCANNER:.c=.o)
 
 TARGET_SCANNER=scanner
 
-EXE = snippet_scan
+EXE = scanoss
 HDRS = snippet_scan.h
 BIN_NAME = scanner
 

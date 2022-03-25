@@ -20,12 +20,48 @@
 #include "snippet_scan.h"
 #include <stdio.h>
 #ifdef COMMIT_HASH_S
-char BuildVersion[] = "snippet scan build version: " VERSION_S " r(" COMMIT_HASH_S ").\n";
+char BuildVersion[] = "scanoss build version: " VERSION_S " r(" COMMIT_HASH_S ").\n";
 #else
-char BuildVersion[] = "snippet scan build version: NULL.\n";
+char BuildVersion[] = "scanoss build version: NULL.\n";
 #endif
 char *baseTMP = "/tmp/scanoss";
 int Agent_pk;
+
+
+int createTables(PGconn* pgConn)
+{
+  char sql[8192];
+  PGresult* result;
+
+  if (!fo_tableExists(pgConn, "scanoss_fileinfo")) {
+   
+    snprintf(sql, sizeof(sql), "\
+          CREATE TABLE scanoss_fileinfo (\
+	          pfile_fk int4 NOT NULL,\
+            matchtype text NULL,\
+            lineranges text NULL,\
+            purl varchar NULL,\
+            url varchar NULL,\
+            filepath varchar NULL,\
+            fileinfo_pk serial4 NOT NULL\
+          );");
+     
+    result = PQexec(pgConn, sql);
+    if (fo_checkPQcommand(pgConn, result, sql, __FILE__, __LINE__)) {
+     
+    // Can 't create table scanoss_fileinfo
+  }
+  }
+}
+
+
+
+
+
+
+
+
+
 
 /*!
  * \brief main function for the pkgagent
@@ -36,13 +72,13 @@ int Agent_pk;
 int main(int argc, char *argv[])
 {
   int c;
-  char *agent_desc = "snippet_scan";
+  char *agent_desc = "scanoss";
 
   int ars_pk = 0;
 
   int upload_pk = 0; /* the upload primary key */
   int user_pk = 0;   // the user  primary key
-  char *AgentARSName = "snippet_scan_ars";
+  char *AgentARSName = "scanoss_ars";
   int rv;
   char sqlbuf[1024];
   char *COMMIT_HASH;
@@ -52,12 +88,12 @@ int main(int argc, char *argv[])
 
   fo_scheduler_connect(&argc, argv, &db_conn);
 
-  COMMIT_HASH = fo_sysconfig("snippet_scan", "COMMIT_HASH");
-  VERSION = fo_sysconfig("snippet_scan", "VERSION");
+  COMMIT_HASH = fo_sysconfig("scanoss", "COMMIT_HASH");
+  VERSION = fo_sysconfig("scanoss", "VERSION");
   sprintf(agent_rev, "%s.%s", VERSION, COMMIT_HASH);
 
   Agent_pk = fo_GetAgentKey(db_conn, basename(argv[0]), 0, agent_rev, agent_desc);
-
+  createTables(db_conn);
   /* Process command-line */
   char filename[200];
   while ((c = getopt(argc, argv, "ic:CvVh")) != -1)
@@ -106,7 +142,7 @@ int main(int argc, char *argv[])
       }
       memset(sqlbuf, 0, sizeof(sqlbuf));
       snprintf(sqlbuf, sizeof(sqlbuf),
-               "select ars_pk from snippet_scan_ars,agent \
+               "select ars_pk from scanoss_ars,agent \
                where agent_pk=agent_fk and ars_success=true \
                and upload_fk='%d' and agent_fk='%d'",
                upload_pk, Agent_pk);

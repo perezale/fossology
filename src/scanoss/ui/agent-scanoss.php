@@ -21,21 +21,34 @@ use Fossology\Lib\Plugin\AgentPlugin;
 
 /**
  * @dir
- * @brief UI plugin of pkgagent
+ * @brief UI plugin of scanoss Agent
  * @file
- * @brief UI plugin of pkgagent
- * @class PkgAgentPlugin
- * @brief UI plugin of pkgagent
+ * @brief UI plugin of  scanoss Agent
+ * @class ScanossAgentPlugin
+ * @brief UI plugin of  scanoss Agent
  */
-class SnippetScanPlugin extends AgentPlugin
+class ScanossAgentPlugin extends AgentPlugin
 {
   public function __construct() {
-    $this->Name = "snippet_scan";
-    $this->Title = _("SCANOSS Analysis (License scan)");
-    $this->AgentName = "snippet_scan";
+    $this->Name = "agent_scanoss";
+    $this->Title = _("SCANOSS Toolkit");
+    $this->AgentName = "scanoss";
 
     parent::__construct();
   }
+
+/**
+   * @brief Render HTML from template
+   * @param array $vars Variables using in template
+   * @return string HTML rendered from agent_decider.html.twig template
+   */
+  public function renderContent(&$vars)
+  {
+    $renderer = $GLOBALS['container']->get('twig.environment');
+    return $renderer->load('scanoss.html.twig')->render($vars);
+  }
+
+
 
   /**
    * @copydoc Fossology::Lib::Plugin::AgentPlugin::AgentHasResults()
@@ -43,7 +56,7 @@ class SnippetScanPlugin extends AgentPlugin
    */
   function AgentHasResults($uploadId=0)
   {
-    return CheckARS($uploadId, $this->AgentName, "SCANOSS Snippet and License scan", "snippet_scan_ars");
+    return CheckARS($uploadId, $this->AgentName, "SCANOSS Snippet and License scan", "scanoss_ars");
   }
 
   /**
@@ -53,7 +66,7 @@ class SnippetScanPlugin extends AgentPlugin
   function preInstall()
   {
     $dbManager = $GLOBALS['container']->get('db.manager');
-    $latestPkgAgent = $dbManager->getSingleRow("SELECT agent_enabled FROM agent WHERE agent_name=$1 ORDER BY agent_ts LIMIT 1",array('snippet_scan'));
+    $latestPkgAgent = $dbManager->getSingleRow("SELECT agent_enabled FROM agent WHERE agent_name=$1 ORDER BY agent_ts LIMIT 1",array('scanoss'));
     if (isset($latestPkgAgent) && !$dbManager->booleanFromDb($latestPkgAgent['agent_enabled']))
     {
       return 0;
@@ -63,4 +76,4 @@ class SnippetScanPlugin extends AgentPlugin
 
 }
 
-register_plugin(new SnippetScanPlugin());
+register_plugin(new ScanossAgentPlugin());
