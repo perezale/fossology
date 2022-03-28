@@ -216,6 +216,22 @@ class ui_view_info extends FO_Plugin
         $vars['getMimeTypeName'] = $pmRow['mimetype_name'];
       }
       $this->dbManager->freeResult($result);
+  
+      $sql = "select s.purl, s.matchtype, s.lineranges, s.url, s.filepath from scanoss_fileinfo s where s.pfile_fk = $1 ";
+      $this->dbManager->prepare(__METHOD__ . "GetFileMatchInfo", $sql);
+      $result = $this->dbManager->execute(__METHOD__ . "GetFileMatchInfo",
+      array($row['pfile_fk']));
+      if (pg_num_rows($result)) {
+        $pmRow = pg_fetch_assoc($result);
+        $vars['purl']=$pmRow['purl'];
+        $vars['matchType']=$pmRow['matchtype'];
+        $vars['lineRange']=$pmRow['lineranges'];
+        $vars['url']=$pmRow['url'];
+        $vars['path']=$pmRow['filepath'];
+        $vars['scanossInfo'] = 1;
+      } else {
+        $vars['scanossInfo'] = 0;
+      }
     }
 
     /* display upload origin */
@@ -574,6 +590,5 @@ class ui_view_info extends FO_Plugin
     return "ui-view-info.html.twig";
   }
 }
-
 $NewPlugin = new ui_view_info();
 $NewPlugin->Initialize();

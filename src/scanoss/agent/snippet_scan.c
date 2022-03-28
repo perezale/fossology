@@ -26,7 +26,10 @@
 #include "snippet_scan.h"
 #include <sys/stat.h>
 #include <stdio.h>
-int runScan(char *path, unsigned char **detected);
+int runScan(char *path, unsigned char **licenses, unsigned char *purl,unsigned char *url, unsigned char *matchType, unsigned char *oss_lines, unsigned char *filePath);
+
+
+
 extern char *baseTMP;
 int Verbose = 0;
 PGconn *db_conn = NULL; ///< The connection to Database
@@ -38,8 +41,12 @@ struct node
   char *oldName;
   struct node *next;
 };
-
 struct node *find(char *data);
+
+
+
+
+
 void loadDeprecated();
 /***************************************************************************/
 
@@ -134,13 +141,31 @@ void scanTempFile(long key)
     size_t readSize = fread(contents, size, 1, f);
     dumpToFile(aux, contents, size);
     char * detectedLicenses[10];
-    int licCount = runScan(aux, detectedLicenses);    /* Scan for licenses on the temp file */
+   
+    unsigned char matchType[50];
+    unsigned char oss_lines[500];
+    unsigned char purl[5000];
+    unsigned char filePath[1000];
+    unsigned char url[1000];
+    char auxSql[5000];
+    
+    
+
+
+    int licCount = runScan(aux, detectedLicenses,purl,url,matchType,oss_lines,filePath);    /* Scan for licenses on the temp file */
+    if(strcmp(matchType,"none") && (!(strcmp(matchType,"file"))||!(strcmp(matchType,"snippet")) )){  
+            sprintf(auxSql,"INSERT INTO scanoss_fileinfo (pfile_fk, matchtype, lineranges, purl, url, filepath) VALUES(%d, '%s', '%s', '%s', '%s', '%s');", key,matchType,oss_lines,purl,url,filePath);
+          
+            result = PQexec(db_conn,auxSql);
+          } 
     int i = 0;
+  
+  
     while(i<licCount){    /*For each item detected... */
       char * detectedLicense=detectedLicenses[i];   /*... get it name */
       if(detectedLicenses!=NULL){
         if(detectedLicense) {
-          char auxSql[1000];
+          
           int detLic= getLicenseId(detectedLicense); /* ... from name, get the key of license that matches short_name at license_ref */
           if(detLic!=0){    /** If the key is valid, insert the result on DB Table */
             sprintf(auxSql,"INSERT INTO license_file(rf_fk, agent_fk, rf_timestamp, pfile_fk) VALUES(%d,%d, now(), %ld);",detLic,Agent_pk,key);
@@ -182,7 +207,7 @@ fo_scheduler_heart(1);
  * \return Licenses detected count.
  * \note This function allocates memory on each item of "detected" array. Ensure to free after it use,
  */
-int runScan(char *path, unsigned char **detected)
+int runScan(char *path, unsigned char **licenses, unsigned char *purl,unsigned char *url, unsigned char *matchType, unsigned char *oss_lines, unsigned char *filePath)
 {
   FILE *Fin;
   char Cmd[MAXCMD];
@@ -202,6 +227,27 @@ int runScan(char *path, unsigned char **detected)
   {
     dump = fgetc(Fin);
   }
+
+
+
+  sprintf(Cmd, "cat   %s.json |jq -r 'to_entries[] |select(.value[]|.id=null)| \"\\(.value[0]|.id ) \\(.value[0]|.oss_lines) \\(.value[0]|.purl[0] ) \\(.value[0]|.file ) \\(.value[0]|.url )\"'", path);
+  Fin = popen(Cmd, "r");  /* Run the command */
+  if (!Fin)
+  {
+    LOG_ERROR("Snippet scan: failed to run scan ");
+  }  else {
+      fscanf(Fin,"%s %s %s %s %s",matchType,oss_lines,purl,filePath,url);
+  }
+
+  
+
+
+    
+
+
+
+
+
   /* Try to get entries for licenses only. 
    * SCANOSS Result output contains a lot of useful information 
    * that is spent in this application. Parse using JQ
@@ -223,11 +269,12 @@ int runScan(char *path, unsigned char **detected)
       memset(lic, '\0', 1000);
       if (!fscanf(Fin, "%s", lic) || (lic == NULL) || (!strcmp(lic, "(null)")) || (!strcmp(lic, "null")) || (!strcmp(lic, "")) || (lic[0] == 255))
         break;
-      asprintf(&detected[retLicensesCount], "%s", lic);// asprintf allocs memory. Free after use to avoid leaks
+      asprintf(&licenses[retLicensesCount], "%s", lic);// asprintf allocs memory. Free after use to avoid leaks
       retLicensesCount++;
     }
   }
-  detected[retLicensesCount] = NULL;
+
+  licenses[retLicensesCount] = NULL;
   return retLicensesCount;
 }
 

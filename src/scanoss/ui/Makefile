@@ -19,7 +19,7 @@ TOP = ../../..
 VARS = $(TOP)/Makefile.conf
 include $(VARS)
 
-MOD_NAME = snippet_scan
+MOD_NAME = scanoss
 MOD_SUBDIR = ui
 
 all:
