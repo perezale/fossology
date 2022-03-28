@@ -233,7 +233,6 @@ class ui_view_info extends FO_Plugin
         $vars['scanossInfo'] = 0;
       }
     }
-
     /* display upload origin */
     $sql = "select * from upload where upload_pk=$1";
     $row = $this->dbManager->getSingleRow($sql, array($row['upload_fk']),
