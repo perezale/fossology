@@ -242,12 +242,6 @@ int runScan(char *path, unsigned char **licenses, unsigned char *purl,unsigned c
   
 
 
-    
-
-
-
-
-
   /* Try to get entries for licenses only. 
    * SCANOSS Result output contains a lot of useful information 
    * that is spent in this application. Parse using JQ

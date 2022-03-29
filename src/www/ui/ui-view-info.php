@@ -1,4 +1,5 @@
 <?php
+
 /***********************************************************
  Copyright (C) 2008-2014 Hewlett-Packard Development Company, L.P.
  Copyright (C) 2015,2018 Siemens AG
@@ -25,16 +26,16 @@ use Fossology\Lib\Dao\UserDao;
 class ui_view_info extends FO_Plugin
 {
     /**
-     * @var UploadDao 
+     * @var UploadDao
      */
     private $uploadDao;
     /**
-     * @var DbManager 
+     * @var DbManager
      */
     private $dbManager;
     /**
      * @var UserDao $userDao
-     * User DAO to use 
+     * User DAO to use
      */
     private $userDao;
 
@@ -89,7 +90,7 @@ class ui_view_info extends FO_Plugin
     /**
      * \brief Display the info data associated with the file.
      */
-    function ShowView($Upload, $Item, $ShowMenu=0)
+    function ShowView($Upload, $Item, $ShowMenu = 0)
     {
         $vars = [];
         if (empty($Upload) || empty($Item)) {
@@ -113,7 +114,8 @@ class ui_view_info extends FO_Plugin
         AND pfile_fk = pfile_pk
         LIMIT 1;";
             $row = $this->dbManager->getSingleRow(
-                $sql, array($Item),
+                $sql,
+                array($Item),
                 __METHOD__ . "GetFileDescribingRow"
             );
             $bytes = $row['pfile_size'];
@@ -159,8 +161,8 @@ class ui_view_info extends FO_Plugin
         AND pfile_pk IN
         (SELECT pfile_fk FROM uploadtree WHERE uploadtree_pk = $1)
         LIMIT $2 OFFSET $3";
-        $this->dbManager->prepare(__METHOD__."getListOfFiles", $sql);
-        $result = $this->dbManager->execute(__METHOD__."getListOfFiles", array($Item,$MAX,$offset));
+        $this->dbManager->prepare(__METHOD__ . "getListOfFiles", $sql);
+        $result = $this->dbManager->execute(__METHOD__ . "getListOfFiles", array($Item,$MAX,$offset));
         $count = pg_num_rows($result);
         if (($page > 0) || ($count >= $MAX)) {
             $vMenu = "<p>\n" . MenuEndlessPage($page, ($count >= $MAX)) . "</p>\n";
@@ -173,7 +175,7 @@ class ui_view_info extends FO_Plugin
             $offset++;
             $v .= Dir2FileList($result, "browse", "view", $offset);
             $v .= $vMenu;
-        } else if ($page > 0) {
+        } elseif ($page > 0) {
             $v .= _("End of listing.\n");
         } else {
             $v .= _("This file does not appear in any other known location.\n");
@@ -197,8 +199,8 @@ class ui_view_info extends FO_Plugin
 
         /* display mimetype */
         $sql = "SELECT * FROM uploadtree where uploadtree_pk = $1";
-        $this->dbManager->prepare(__METHOD__."DisplayMimetype", $sql);
-        $result = $this->dbManager->execute(__METHOD__."DisplayMimetype", array($Item));
+        $this->dbManager->prepare(__METHOD__ . "DisplayMimetype", $sql);
+        $result = $this->dbManager->execute(__METHOD__ . "DisplayMimetype", array($Item));
         if (pg_num_rows($result)) {
             $vars['fileInfo'] = 1;
             $row = pg_fetch_assoc($result);
@@ -226,7 +228,7 @@ class ui_view_info extends FO_Plugin
                 $vars['getMimeTypeName'] = $pmRow['mimetype_name'];
             }
             $this->dbManager->freeResult($result);
-  
+
             $sql = "select s.purl, s.matchtype, s.lineranges, s.url, s.filepath from scanoss_fileinfo s where s.pfile_fk = $1 ";
             $this->dbManager->prepare(__METHOD__ . "GetFileMatchInfo", $sql);
             $result = $this->dbManager->execute(
@@ -235,11 +237,11 @@ class ui_view_info extends FO_Plugin
             );
             if (pg_num_rows($result)) {
                 $pmRow = pg_fetch_assoc($result);
-                $vars['purl']=$pmRow['purl'];
-                $vars['matchType']=$pmRow['matchtype'];
-                $vars['lineRange']=$pmRow['lineranges'];
-                $vars['url']=$pmRow['url'];
-                $vars['path']=$pmRow['filepath'];
+                $vars['purl'] = $pmRow['purl'];
+                $vars['matchType'] = $pmRow['matchtype'];
+                $vars['lineRange'] = $pmRow['lineranges'];
+                $vars['url'] = $pmRow['url'];
+                $vars['path'] = $pmRow['filepath'];
                 $vars['scanossInfo'] = 1;
             } else {
                 $vars['scanossInfo'] = 0;
@@ -248,17 +250,17 @@ class ui_view_info extends FO_Plugin
         /* display upload origin */
         $sql = "select * from upload where upload_pk=$1";
         $row = $this->dbManager->getSingleRow(
-            $sql, array($row['upload_fk']),
+            $sql,
+            array($row['upload_fk']),
             __METHOD__ . "getUploadOrigin"
         );
         if ($row) {
-
             /* upload source */
             if ($row['upload_mode'] & 1 << 2) {
                 $text = _("Added by URL");
-            } else if ($row['upload_mode'] & 1 << 3) {
+            } elseif ($row['upload_mode'] & 1 << 3) {
                 $text = _("Added by file upload");
-            } else if ($row['upload_mode'] & 1 << 4) {
+            } elseif ($row['upload_mode'] & 1 << 4) {
                 $text = _("Added from filesystem");
             }
             $vars['fileUploadOriginInfo'] = $text;
@@ -272,7 +274,7 @@ class ui_view_info extends FO_Plugin
 
         /* display upload owner*/
         $sql = "SELECT user_name from users, upload  where user_pk = user_fk and upload_pk = $1";
-        $row = $this->dbManager->getSingleRow($sql, array($Upload), __METHOD__."getUploadOwner");
+        $row = $this->dbManager->getSingleRow($sql, array($Upload), __METHOD__ . "getUploadOwner");
 
         $vars['fileUploadUser'] = $row['user_name'];
 
@@ -283,48 +285,48 @@ class ui_view_info extends FO_Plugin
      * \brief Display the package info associated with
      * the rpm/debian package.
      */
-    function ShowPackageInfo($Upload, $Item, $ShowMenu=0)
+    function ShowPackageInfo($Upload, $Item, $ShowMenu = 0)
     {
         $vars = [];
         $Require = "";
         $MIMETYPE = "";
         $Count = 0;
 
-        $rpm_info = array("Package"=>"pkg_name",
-                      "Alias"=>"pkg_alias",
-                      "Architecture"=>"pkg_arch",
-                      "Version"=>"version",
-                      "License"=>"license",
-                      "Group"=>"pkg_group",
-                      "Packager"=>"packager",
-                      "Release"=>"release",
-                      "BuildDate"=>"build_date",
-                      "Vendor"=>"vendor",
-                      "URL"=>"url",
-                      "Summary"=>"summary",
-                      "Description"=>"description",
-                      "Source"=>"source_rpm");
+        $rpm_info = array("Package" => "pkg_name",
+                      "Alias" => "pkg_alias",
+                      "Architecture" => "pkg_arch",
+                      "Version" => "version",
+                      "License" => "license",
+                      "Group" => "pkg_group",
+                      "Packager" => "packager",
+                      "Release" => "release",
+                      "BuildDate" => "build_date",
+                      "Vendor" => "vendor",
+                      "URL" => "url",
+                      "Summary" => "summary",
+                      "Description" => "description",
+                      "Source" => "source_rpm");
 
-        $deb_binary_info = array("Package"=>"pkg_name",
-                             "Architecture"=>"pkg_arch",
-                             "Version"=>"version",
-                             "Section"=>"section",
-                             "Priority"=>"priority",
-                             "Installed Size"=>"installed_size",
-                             "Maintainer"=>"maintainer",
-                             "Homepage"=>"homepage",
-                             "Source"=>"source",
-                             "Summary"=>"summary",
-                             "Description"=>"description");
+        $deb_binary_info = array("Package" => "pkg_name",
+                             "Architecture" => "pkg_arch",
+                             "Version" => "version",
+                             "Section" => "section",
+                             "Priority" => "priority",
+                             "Installed Size" => "installed_size",
+                             "Maintainer" => "maintainer",
+                             "Homepage" => "homepage",
+                             "Source" => "source",
+                             "Summary" => "summary",
+                             "Description" => "description");
 
-        $deb_source_info = array("Format"=>"format",
-                             "Source"=>"source",
-                             "Binary"=>"pkg_name",
-                             "Architecture"=>"pkg_arch",
-                             "Version"=>"version",
-                             "Maintainer"=>"maintainer",
-                             "Uploaders"=>"uploaders",
-                             "Standards-Version"=>"standards_version");
+        $deb_source_info = array("Format" => "format",
+                             "Source" => "source",
+                             "Binary" => "pkg_name",
+                             "Architecture" => "pkg_arch",
+                             "Version" => "version",
+                             "Maintainer" => "maintainer",
+                             "Uploaders" => "uploaders",
+                             "Standards-Version" => "standards_version");
 
         if (empty($Item) || empty($Upload)) {
             return $vars;
@@ -334,15 +336,15 @@ class ui_view_info extends FO_Plugin
          Check if pkgagent disabled
          ***********************************/
         $sql = "SELECT agent_enabled FROM agent WHERE agent_name ='pkgagent' order by agent_ts LIMIT 1;";
-        $row = $this->dbManager->getSingleRow($sql, array(), __METHOD__."checkPkgagentDisabled");
+        $row = $this->dbManager->getSingleRow($sql, array(), __METHOD__ . "checkPkgagentDisabled");
         if (isset($row) && ($row['agent_enabled'] == 'f')) {
             return $vars;
         }
 
         /* If pkgagent_ars table didn't exists, don't show the result. */
         $sql = "SELECT typlen  FROM pg_type where typname='pkgagent_ars' limit 1;";
-        $this->dbManager->prepare(__METHOD__."displayPackageInfo", $sql);
-        $result = $this->dbManager->execute(__METHOD__."displayPackageInfo", array());
+        $this->dbManager->prepare(__METHOD__ . "displayPackageInfo", $sql);
+        $result = $this->dbManager->execute(__METHOD__ . "displayPackageInfo", array());
         $numrows = pg_num_rows($result);
         $this->dbManager->freeResult($result);
         if ($numrows <= 0) {
@@ -363,8 +365,8 @@ class ui_view_info extends FO_Plugin
         INNER JOIN pfile ON uploadtree_pk = $1
         AND pfile_fk = pfile_pk
         INNER JOIN mimetype ON pfile_mimetypefk = mimetype_pk;";
-        $this->dbManager->prepare(__METHOD__."getMimetypeName", $sql);
-        $result = $this->dbManager->execute(__METHOD__."getMimetypeName", array($Item));
+        $this->dbManager->prepare(__METHOD__ . "getMimetypeName", $sql);
+        $result = $this->dbManager->execute(__METHOD__ . "getMimetypeName", array($Item));
         while ($row = pg_fetch_assoc($result)) {
             if (! empty($row['mimetype_name'])) {
                 $MIMETYPE = $row['mimetype_name'];
@@ -373,20 +375,20 @@ class ui_view_info extends FO_Plugin
         $this->dbManager->freeResult($result);
 
         /**
-   * RPM Package Info 
+   * RPM Package Info
 **/
         if ($MIMETYPE == "application/x-rpm") {
             $sql = "SELECT *
                 FROM pkg_rpm
                 INNER JOIN uploadtree ON uploadtree_pk = $1
                 AND uploadtree.pfile_fk = pkg_rpm.pfile_fk;";
-            $R = $this->dbManager->getSingleRow($sql, array($Item), __METHOD__."getRPMPackageInfo");
+            $R = $this->dbManager->getSingleRow($sql, array($Item), __METHOD__ . "getRPMPackageInfo");
             if ((! empty($R['source_rpm'])) and (trim($R['source_rpm']) != "(none)")) {
                 $vars['packageType'] = _("RPM Binary Package");
             } else {
                 $vars['packageType'] = _("RPM Source Package");
             }
-            $Count=1;
+            $Count = 1;
 
             if (! empty($R['pkg_pk'])) {
                 $Require = $R['pkg_pk'];
@@ -395,33 +397,33 @@ class ui_view_info extends FO_Plugin
                     $entry['count'] = $Count;
                     $entry['type'] = _($key);
                     $entry['value'] = htmlentities($R["$value"]);
-                    $Count ++;
+                    $Count++;
                     $vars['packageEntries'][] = $entry;
                 }
 
                 $sql = "SELECT * FROM pkg_rpm_req WHERE pkg_fk = $1;";
-                $this->dbManager->prepare(__METHOD__."getPkg_rpm_req", $sql);
-                $result = $this->dbManager->execute(__METHOD__."getPkg_rpm_req", array($Require));
+                $this->dbManager->prepare(__METHOD__ . "getPkg_rpm_req", $sql);
+                $result = $this->dbManager->execute(__METHOD__ . "getPkg_rpm_req", array($Require));
 
                 while ($R = pg_fetch_assoc($result) and ! empty($R['req_pk'])) {
                     $entry = [];
                     $entry['count'] = $Count;
                     $entry['type'] = _("Requires");
                     $entry['value'] = htmlentities($R['req_value']);
-                    $Count ++;
+                    $Count++;
                     $vars['packageRequires'][] = $entry;
                 }
                 $this->dbManager->freeResult($result);
             }
-        } else if ($MIMETYPE == "application/x-debian-package") {
+        } elseif ($MIMETYPE == "application/x-debian-package") {
             $vars['packageType'] = _("Debian Binary Package\n");
 
             $sql = "SELECT *
                 FROM pkg_deb
                 INNER JOIN uploadtree ON uploadtree_pk = $1
                 AND uploadtree.pfile_fk = pkg_deb.pfile_fk;";
-            $R = $this->dbManager->getSingleRow($sql, array($Item), __METHOD__."debianBinaryPackageInfo");
-            $Count=1;
+            $R = $this->dbManager->getSingleRow($sql, array($Item), __METHOD__ . "debianBinaryPackageInfo");
+            $Count = 1;
 
             if ($R) {
                 $Require = $R['pkg_pk'];
@@ -430,35 +432,35 @@ class ui_view_info extends FO_Plugin
                     $entry['count'] = $Count;
                     $entry['type'] = _($key);
                     $entry['value'] = htmlentities($R["$value"]);
-                    $Count ++;
+                    $Count++;
                     $vars['packageEntries'][] = $entry;
                 }
                 pg_free_result($result);
 
                 $sql = "SELECT * FROM pkg_deb_req WHERE pkg_fk = $1;";
-                $this->dbManager->prepare(__METHOD__."getPkg_rpm_req", $sql);
-                $result = $this->dbManager->execute(__METHOD__."getPkg_rpm_req", array($Require));
+                $this->dbManager->prepare(__METHOD__ . "getPkg_rpm_req", $sql);
+                $result = $this->dbManager->execute(__METHOD__ . "getPkg_rpm_req", array($Require));
 
                 while ($R = pg_fetch_assoc($result) and ! empty($R['req_pk'])) {
                     $entry = [];
                     $entry['count'] = $Count;
                     $entry['type'] = _("Depends");
                     $entry['value'] = htmlentities($R['req_value']);
-                    $Count ++;
+                    $Count++;
                     $vars['packageRequires'][] = $entry;
                 }
                 $this->dbManager->freeResult($result);
             }
             $V .= "</table>\n";
-        } else if ($MIMETYPE == "application/x-debian-source") {
+        } elseif ($MIMETYPE == "application/x-debian-source") {
             $vars['packageType'] = _("Debian Source Package\n");
 
             $sql = "SELECT *
                 FROM pkg_deb
                 INNER JOIN uploadtree ON uploadtree_pk = $1
                 AND uploadtree.pfile_fk = pkg_deb.pfile_fk;";
-            $R = $this->dbManager->getSingleRow($sql, array($Item), __METHOD__."debianSourcePakcageInfo");
-            $Count=1;
+            $R = $this->dbManager->getSingleRow($sql, array($Item), __METHOD__ . "debianSourcePakcageInfo");
+            $Count = 1;
 
             if ($R) {
                 $Require = $R['pkg_pk'];
@@ -467,21 +469,21 @@ class ui_view_info extends FO_Plugin
                     $entry['count'] = $Count;
                     $entry['type'] = _($key);
                     $entry['value'] = htmlentities($R["$value"]);
-                    $Count ++;
+                    $Count++;
                     $vars['packageEntries'][] = $entry;
                 }
                 pg_free_result($result);
 
                 $sql = "SELECT * FROM pkg_deb_req WHERE pkg_fk = $1;";
-                $this->dbManager->prepare(__METHOD__."getPkg_rpm_req", $sql);
-                $result = $this->dbManager->execute(__METHOD__."getPkg_rpm_req", array($Require));
+                $this->dbManager->prepare(__METHOD__ . "getPkg_rpm_req", $sql);
+                $result = $this->dbManager->execute(__METHOD__ . "getPkg_rpm_req", array($Require));
 
                 while ($R = pg_fetch_assoc($result) and ! empty($R['req_pk'])) {
                     $entry = [];
                     $entry['count'] = $Count;
                     $entry['type'] = _("Build-Depends");
                     $entry['value'] = htmlentities($R['req_value']);
-                    $Count ++;
+                    $Count++;
                     $vars['packageRequires'][] = $entry;
                 }
                 $this->dbManager->freeResult($result);
@@ -577,7 +579,7 @@ class ui_view_info extends FO_Plugin
             $entry['group'] = $this->userDao->getGroupNameById($reuseGroupFk) .
             " ($reuseGroupFk)";
             $entry['sha1'] = $this->uploadDao->getUploadHashes($reuseUploadFk)['sha1'];
-            $entry['mode'] = implode(", ", $reuseMode)." reuse";
+            $entry['mode'] = implode(", ", $reuseMode) . " reuse";
 
             $vars['reusedPackageList'][] = $entry;
         }
@@ -592,7 +594,7 @@ class ui_view_info extends FO_Plugin
         }
 
         $itemId = GetParm("item", PARM_INTEGER);
-        $this->vars['micromenu'] = Dir2Browse("browse", $itemId, null, $showBox=0, "View-Meta");
+        $this->vars['micromenu'] = Dir2Browse("browse", $itemId, null, $showBox = 0, "View-Meta");
 
         $this->vars += $this->ShowTagInfo($uploadId, $itemId);
         $this->vars += $this->ShowPackageinfo($uploadId, $itemId, 1);
