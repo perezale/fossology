@@ -28,7 +28,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include "scanner.h"
-#include "format_utils.h"
+///#include "format_utils.h"
 
 enum
 {
@@ -68,7 +68,7 @@ void scanner_evt(const scanner_status_t * p_scanner, scanner_evt_t evt)
 
 #define MAX_LINE 1024
 #define MAX_FILE ((unsigned int) 1024*1024*1024*10)
-static void stdin_process(scanner_object_t * s)
+/*static void stdin_process(scanner_object_t * s)
 {
     char * buf = calloc(MAX_FILE,1);
     fread(buf, MAX_FILE, 1, stdin );
@@ -78,12 +78,12 @@ static void stdin_process(scanner_object_t * s)
     
     asprintf(&s->curl_temp_path,"/tmp/scanoss/scanoss-curl.tmp");
     scanner_fossology(wfp_buffer, s);
-    int err = scan_parse_v2(s->curl_temp_path);
-    print_licenses(stdout);
+  //  int err = scan_parse_v2(s->curl_temp_path);
+   // print_licenses(stdout);
     
     free(wfp_buffer);
     free(s->curl_temp_path);
-}
+}*/
 
 int main(int argc, char *argv[])
 {
@@ -125,7 +125,7 @@ int main(int argc, char *argv[])
                 print_output = false;
                 break;
             case 'L':
-                scanner_set_log_file(optarg);
+          //      scanner_set_log_file(optarg);
                 break;
             case 'd':
                 scanner_set_log_level(1);
@@ -153,7 +153,6 @@ int main(int argc, char *argv[])
                 fprintf(stderr, "-F<flags>\t Scanning engine flags (1: disable snippet matching, 2: enable snippet ids, 4: disable dependencies,\n"
                                               "\t\t 8: disable licenses, 16: disable copyrights, 32: disable vulnerabilities, 64: disable quality,\n"
                                               "\t\t 128: disable cryptography,256: disable best match, 512: Report identified files)\n");
-                fprintf(stderr, "-f<format>\t Output format, could be: plain (default), spdx or cyclonedx.\n");
                 fprintf(stderr, "-w\t\t Scan a wfp file\n");
                 fprintf(stderr, "-W\t\t Create a wfp file from path\n");
                 fprintf(stderr, "-o<file_name>\t Save the scan results in the specified file\n");
@@ -180,18 +179,6 @@ int main(int argc, char *argv[])
             break;
         case SCAN_WFP:
             err = scanner_wfp_scan(scanner);
-            break;
-        case CONVERT:
-            err = scan_parse_v2(path);
-            if (!err)
-            {
-                FILE * f = fopen(file,"w+");
-                print_matches(f,format);
-                fclose(f);
-            }
-            break;
-        case STDIN:
-            stdin_process(scanner);
             break;
         default:
             break;

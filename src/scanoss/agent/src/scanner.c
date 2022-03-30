@@ -2,7 +2,8 @@
 /*
  * src/scanner.c
  *
- * A simple SCANOSS client in C for direct file scanning
+ * A CUSTOMIZED Version of the original SCANOSS  C client for direct file scanning
+ * from the scanoss agent for FOSSOlogy
  *
  * Copyright (C) 2018-2020 SCANOSS.COM
  *
@@ -36,7 +37,7 @@
 #include "blacklist_ext.h"
 #include "winnowing.h"
 #include "log.h"
-#include "format_utils.h"
+
 /*SCANNER PRIVATE PROPERTIES*/
 
 
@@ -582,24 +583,7 @@ static int curl_request(int api_req,char * endpoint, char* data, scanner_object_
     return 0;
 
 }
-bool print_format(scanner_object_t * s)
-{
-    if (!strcmp(s->format, SCANNER_FORMAT_PLAIN))
-        return false;
 
-    fprintf(stderr, "\nPrinting the selected format: %s", s->format);
-    if(scan_parse_v2(s->output_path))
-    {
-        log_error("There was a error parsing the json file, please check the output: %s", s->output_path);
-        return true;
-    }
-    
-    //rewrite output path with the selected format
-    s->output = fopen(s->output_path, "w+");
-    print_matches(s->output, s->format);
-    fclose(s->output);
-    return false;
-}
 
 /********* PUBLIC FUNTIONS DEFINITION ************/
 
@@ -608,7 +592,7 @@ void scanner_set_format(scanner_object_t *s, char *form)
     if (!form)
         return;
         
-    if (strstr(form, "plain") || strstr(form, "spdx") || strstr(form, "cyclonedx"))
+    if (strstr(form, "plain") )
     {
         strncpy(s->format, form, sizeof(s->format));
     }
@@ -715,7 +699,7 @@ void scanner_wfp_capture(char * src, int length, char * path, char **md5, char *
 
     /* Save file information to buffer */
     log_debug("calc MD5");
-    sprintf(wfp_buffer + strlen(wfp_buffer), "file=%s,%lu,%s\n", hex_md5, length, path);
+    sprintf(wfp_buffer + strlen(wfp_buffer), "file=%s,%u,%s\n", hex_md5, length, path);
     free(hex_md5);
 
     /* If it is not binary (chr(0) found), calculate snippet wfps */
@@ -817,9 +801,7 @@ int scanner_recursive_scan(scanner_object_t * scanner, bool wfp_only)
     {
         fclose(scanner->output);
     }
-    //print the selected format or do nothing if it is plain.
-    print_format(scanner);
-
+   
     if (scanner->callback)
     {
         scanner->callback(&scanner->status,SCANNER_EVT_END);
