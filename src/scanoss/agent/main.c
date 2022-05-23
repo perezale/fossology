@@ -64,7 +64,7 @@ int createTables(PGconn* pgConn)
 
 
 /*!
- * \brief main function for the pkgagent
+ * \brief main function for the scanoss
  * \param argc the number of command line arguments
  * \param argv the command line arguments
  * \return 0 on a successful program execution
