@@ -375,8 +375,8 @@ class ui_view_info extends FO_Plugin
     $this->dbManager->freeResult($result);
 
     /**
-  * RPM Package Info
-**/
+    * RPM Package Info
+    **/
     if ($MIMETYPE == "application/x-rpm") {
       $sql = "SELECT *
         FROM pkg_rpm

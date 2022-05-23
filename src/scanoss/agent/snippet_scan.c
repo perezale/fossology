@@ -28,12 +28,15 @@
 #include <stdio.h>
 int runScan(char *path, unsigned char **licenses, unsigned char *purl,unsigned char *url, unsigned char *matchType, unsigned char *oss_lines, unsigned char *filePath);
 
-
+extern void logme(char *msg);
 
 extern char *baseTMP;
 int Verbose = 0;
 PGconn *db_conn = NULL; ///< The connection to Database
 extern int Agent_pk;
+extern char ApiUrl[200];
+extern char accToken[64];
+extern char ApiPort[6];
 /**Forwarded definition for a linked list to map deprecated licenses names*/
 struct node
 {
@@ -209,13 +212,34 @@ fo_scheduler_heart(1);
  */
 int runScan(char *path, unsigned char **licenses, unsigned char *purl,unsigned char *url, unsigned char *matchType, unsigned char *oss_lines, unsigned char *filePath)
 {
+
   FILE *Fin;
   char Cmd[MAXCMD];
   unsigned char lic[1000]; 
   memset(Cmd, '\0', MAXCMD);
   int retLicensesCount = 0;
+  unsigned char apiurl[400];
+  unsigned char key[64];
+  unsigned char port[6];
+  if(ApiUrl[0]!='\0') 
+  {
+    if(ApiPort[0]!='\0')
+      sprintf(apiurl,"-H %s -p %s",ApiUrl,ApiPort);
+    else
+      sprintf(apiurl,"-H %s",ApiUrl);
+  }  
+  else  
+      sprintf(apiurl,"");
 
-  sprintf(Cmd, "scanner  %s -o %s.json", path, path); /* Create the command to run */
+  if(accToken[0]!='\0') 
+  {
+    sprintf(key,"-K %s",accToken);
+  }  
+  else  
+    sprintf(key,"");
+
+  sprintf(Cmd, "scanner  %s -o %s.json %s %s", path, path,apiurl,key); /* Create the command to run */
+  logme(Cmd);
   Fin = popen(Cmd, "r");  /* Run the command */
   if (!Fin)
   {

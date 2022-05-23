@@ -92,14 +92,14 @@ int main(int argc, char *argv[])
     bool print_output = true;
     char * file = NULL;
     char format[20] = "plain";
-    char host[32] = API_HOST_DEFAULT;
+    char host[512] = API_HOST_DEFAULT;
     char port[5] = API_PORT_DEFAULT;
     char session[64] = API_SESSION_DEFAULT;
     char path[512];
     int flags = 0;
     bool wfp_only = false;
 
-    while ((param = getopt (argc, argv, "F:H:p:f:o:L:cluwWhdtvs")) != -1)
+    while ((param = getopt (argc, argv, "F:H:K:p:f:o:L:cluwWhdtvs")) != -1)
         switch (param)
         {
             case 'c':
@@ -112,10 +112,13 @@ int main(int argc, char *argv[])
                 flags = atol(optarg);
                 break;
             case 'H':
-                strcpy(host,optarg);
+                sprintf(host,"%s",optarg);
                 break;
             case 'p':
                 strcpy(port,optarg);
+                break;
+            case 'K':
+                strcpy(session,optarg);
                 break;
             case 'f':
                 strcpy(format,optarg);
@@ -154,7 +157,10 @@ int main(int argc, char *argv[])
                                               "\t\t 8: disable licenses, 16: disable copyrights, 32: disable vulnerabilities, 64: disable quality,\n"
                                               "\t\t 128: disable cryptography,256: disable best match, 512: Report identified files)\n");
                 fprintf(stderr, "-w\t\t Scan a wfp file\n");
-                fprintf(stderr, "-W\t\t Create a wfp file from path\n");
+                fprintf(stderr, "-w\t\t Scan a wfp file\n");
+                fprintf(stderr, "-H\t\t Set scanning host url\n");
+                fprintf(stderr, "-p\t\t Set scanning port\n");
+              
                 fprintf(stderr, "-o<file_name>\t Save the scan results in the specified file\n");
                 fprintf(stderr, "-L<file_name>\t Set logs filename\n");
                 fprintf(stderr, "-d\t\t Enable debug messages\n");

@@ -4,7 +4,7 @@
  *
  * The SCANOSS Agent for Fossology tool
  *
- * Copyright (C) 2018-2021 SCANOSS.COM
+ * Copyright (C) 2018-2022 SCANOSS.COM
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,71 @@ char BuildVersion[] = "scanoss build version: NULL.\n";
 #endif
 char *baseTMP = "/tmp/scanoss";
 int Agent_pk;
+char ApiUrl[400];
+char accToken[100];
+char ApiPort[6];
+
+
+void logme(char *msg)
+{
+  #ifdef _SCANOSS_LOGME
+  FILE *fptr;
+
+  // use appropriate location if you are using MacOS or Linux
+  fptr = fopen("/home/fossy/snippet_scan.txt", "a");
+
+  if (fptr == NULL)
+  {
+    printf("Error!");
+    exit(1);
+  }
+
+  fprintf(fptr, "->%s", msg);
+  fclose(fptr);
+  #endif
+}
+void loadAgentConfiguration(PGconn *pg_conn)
+{
+
+  char sqlbuf[200];
+  PGresult *result;
+  char sqlA[] = "select conf_value from sysconfig where variablename='ScAPIURL';";
+ 
+  result = PQexec(db_conn, sqlA);
+  if (fo_checkPQresult(db_conn, result, sqlA, __FILE__, __LINE__))
+  {
+    logme("Error retrieving APIURL");
+    exit(-1);
+  }
+
+  sprintf(ApiUrl, "%s", PQgetvalue(result, 0, 0));
+  char sqlB[] = "select conf_value from sysconfig where variablename='ScToken';";
+
+  result = PQexec(db_conn, sqlB);
+  if (fo_checkPQresult(db_conn, result, sqlB, __FILE__, __LINE__))
+  {
+    logme("Error retrieving Token");
+    exit(-1);
+  }
+  sprintf(accToken, "%s", PQgetvalue(result, 0, 0));
+
+  char sqlC[] = "select conf_value from sysconfig where variablename='ScPort';";
+ 
+  result = PQexec(db_conn, sqlC);
+  if (fo_checkPQresult(db_conn, result, sqlC, __FILE__, __LINE__))
+  {
+    logme("Error retrieving Port");
+    exit(-1);
+  }
+  sprintf(ApiPort, "%s", PQgetvalue(result, 0, 0));
+
+
+
+
+
+
+}
+
 
 
 int createTables(PGconn* pgConn)
@@ -52,6 +117,31 @@ int createTables(PGconn* pgConn)
     // Can 't create table scanoss_fileinfo
   }
   }
+char sqlPort[]="INSERT INTO sysconfig (variablename, conf_value, ui_label, vartype, group_name, group_order, description, validation_function, option_value)\
+  VALUES('ScPort', '443', 'SCANOSS port', 2, 'SCANOSS', 3, 'Host port for the API (defult 443)', NULL, NULL);";
+
+char sqlHost[]="INSERT INTO sysconfig (variablename, conf_value, ui_label, vartype, group_name, group_order, description, validation_function, option_value) \
+  VALUES('ScAPIURL', 'https://scanoss.com/api', 'SCANOSS API URL', 2, 'SCANOSS', 1, '(leave blank for default https://osskb.org/scan/direct)', NULL, NULL);";
+char sqlToken[]="INSERT INTO sysconfig (sysconfig_pk, variablename, conf_value, ui_label, vartype, group_name, group_order, description, validation_function, option_value) \
+  VALUES(73, 'ScToken', 'fD4P8wbfWS9XHvsrzcDrB0zu', 'SCANOSS access token', 2, 'SCANOSS', 2, 'Set token to access full scanning service.', NULL, NULL);";
+ result = PQexec(pgConn, sqlPort);
+    if (fo_checkPQcommand(pgConn, result, sqlPort, __FILE__, __LINE__)) {
+     
+    // Can 't create table scanoss_fileinfo
+  }
+  result = PQexec(pgConn, sqlHost);
+    if (fo_checkPQcommand(pgConn, result, sqlHost, __FILE__, __LINE__)) {
+     
+    // Can 't create table scanoss_fileinfo
+  }
+  result = PQexec(pgConn, sqlToken);
+    if (fo_checkPQcommand(pgConn, result, sqlToken, __FILE__, __LINE__)) {
+     
+    // Can 't create table scanoss_fileinfo
+  }
+
+
+
 }
 
 
@@ -94,6 +184,7 @@ int main(int argc, char *argv[])
 
   Agent_pk = fo_GetAgentKey(db_conn, basename(argv[0]), 0, agent_rev, agent_desc);
   createTables(db_conn);
+  loadAgentConfiguration(db_conn);
   /* Process command-line */
   char filename[200];
   while ((c = getopt(argc, argv, "ic:CvVh")) != -1)
