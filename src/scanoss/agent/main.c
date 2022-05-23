@@ -51,8 +51,6 @@ void logme(char *msg)
 }
 void loadAgentConfiguration(PGconn *pg_conn)
 {
-
-  char sqlbuf[200];
   PGresult *result;
   char sqlA[] = "select conf_value from sysconfig where variablename='ScAPIURL';";
  
@@ -84,11 +82,6 @@ void loadAgentConfiguration(PGconn *pg_conn)
   }
   sprintf(ApiPort, "%s", PQgetvalue(result, 0, 0));
 
-
-
-
-
-
 }
 
 
@@ -113,24 +106,24 @@ int createTables(PGconn* pgConn)
      
     result = PQexec(pgConn, sql);
     if (fo_checkPQcommand(pgConn, result, sql, __FILE__, __LINE__)) {
-     
+
     // Can 't create table scanoss_fileinfo
   }
   }
-char sqlPort[]="INSERT INTO sysconfig (variablename, conf_value, ui_label, vartype, group_name, group_order, description, validation_function, option_value)\
+  char sqlPort[]="INSERT INTO sysconfig (variablename, conf_value, ui_label, vartype, group_name, group_order, description, validation_function, option_value)\
   VALUES('ScPort', '443', 'SCANOSS port', 2, 'SCANOSS', 3, 'Host port for the API (defult 443)', NULL, NULL);";
 
-char sqlHost[]="INSERT INTO sysconfig (variablename, conf_value, ui_label, vartype, group_name, group_order, description, validation_function, option_value) \
+  char sqlHost[]="INSERT INTO sysconfig (variablename, conf_value, ui_label, vartype, group_name, group_order, description, validation_function, option_value) \
   VALUES('ScAPIURL', 'https://scanoss.com/api', 'SCANOSS API URL', 2, 'SCANOSS', 1, '(leave blank for default https://osskb.org/scan/direct)', NULL, NULL);";
-char sqlToken[]="INSERT INTO sysconfig (sysconfig_pk, variablename, conf_value, ui_label, vartype, group_name, group_order, description, validation_function, option_value) \
-  VALUES(73, 'ScToken', 'fD4P8wbfWS9XHvsrzcDrB0zu', 'SCANOSS access token', 2, 'SCANOSS', 2, 'Set token to access full scanning service.', NULL, NULL);";
- result = PQexec(pgConn, sqlPort);
-    if (fo_checkPQcommand(pgConn, result, sqlPort, __FILE__, __LINE__)) {
+  char sqlToken[]="INSERT INTO sysconfig ( variablename, conf_value, ui_label, vartype, group_name, group_order, description, validation_function, option_value) \
+  VALUES( 'ScToken', 'fD4P8wbfWS9XHvsrzcDrB0zu', 'SCANOSS access token', 2, 'SCANOSS', 2, 'Set token to access full scanning service.', NULL, NULL);";
+  result = PQexec(pgConn, sqlPort);
+  if (fo_checkPQcommand(pgConn, result, sqlPort, __FILE__, __LINE__)) {
      
     // Can 't create table scanoss_fileinfo
   }
   result = PQexec(pgConn, sqlHost);
-    if (fo_checkPQcommand(pgConn, result, sqlHost, __FILE__, __LINE__)) {
+   if (fo_checkPQcommand(pgConn, result, sqlHost, __FILE__, __LINE__)) {
      
     // Can 't create table scanoss_fileinfo
   }

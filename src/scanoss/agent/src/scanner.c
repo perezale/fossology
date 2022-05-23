@@ -23,8 +23,7 @@
 
 #define _GNU_SOURCE
 #include <ctype.h>
-#include <openssl/md5.h>
-#include <openssl/ssl.h>
+#include <gcrypt.h>
 #include <dirent.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -64,6 +63,16 @@ const char EXCLUDED_EXTENSIONS[] = " .1, .2, .3, .4, .5, .6, .7, .8, .9, .ac, .a
 
 
 static int curl_request(int api_req, char* endpoint, char* data,scanner_object_t *s);
+/* Adapter function for compatibility with openssl*/
+void MD5(unsigned char *fileContent,int len,unsigned char output[16] ){
+  unsigned int l = gcry_md_get_algo_dlen(GCRY_MD_MD5); /* get digest length (used later to print the result) */
+ unsigned char *x;
+    gcry_md_hd_t h;
+    gcry_md_open(&h, GCRY_MD_MD5, GCRY_MD_FLAG_SECURE); /* initialise the hash context */
+    gcry_md_write(h, fileContent,len); /* hash some text */
+    x = gcry_md_read(h, GCRY_MD_MD5); /* get the result */
+    memcpy(output,x,16);
+}
 
 /* Returns a hexadecimal representation of the first "len" bytes in "bin" */
 static char *bin_to_hex(uint8_t *bin, uint32_t len)

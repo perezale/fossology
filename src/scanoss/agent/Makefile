@@ -23,7 +23,7 @@ include $(VARS)
 
 CFLAGS_LOCAL = $(FO_CFLAGS) 
 LDFLAGS_LOCAL = $(FO_LDFLAGS) -lpq 
-LDFLAGS+=-lpthread -lcrypto -lssl -lcurl -lm
+LDFLAGS+=-lpthread  -lcurl -lm -lgcrypt
 CCFLAGS+= -fPIC -g -Wall  -std=gnu99 -I./inc -I./external/inc
 
 SOURCES_SCANNER=$(wildcard src/*.c) $(wildcard src/**/*.c)  $(wildcard external/*.c) $(wildcard external/**/*.c)

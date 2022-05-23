@@ -153,8 +153,6 @@ void scanTempFile(long key)
     char auxSql[5000];
     
     
-
-
     int licCount = runScan(aux, detectedLicenses,purl,url,matchType,oss_lines,filePath);    /* Scan for licenses on the temp file */
     if(strcmp(matchType,"none") && (!(strcmp(matchType,"file"))||!(strcmp(matchType,"snippet")) )){  
             sprintf(auxSql,"INSERT INTO scanoss_fileinfo (pfile_fk, matchtype, lineranges, purl, url, filepath) VALUES(%d, '%s', '%s', '%s', '%s', '%s');", key,matchType,oss_lines,purl,url,filePath);
