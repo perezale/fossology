@@ -1,7 +1,7 @@
 
 
-![enter image description here](https://www.openchainproject.org/wp-content/uploads/sites/15/2021/10/scanoss.png)
-# SCANOSS Agent for FOSSOLOGY
+![scanoss.com](https://www.openchainproject.org/wp-content/uploads/sites/15/2021/10/scanoss.png)
+# [SCANOSS](www.scanoss.com) Agent for FOSSOLOGY
 This agent lets the user to search code snippets over more that 250M urls.
 For each snippet or full file, the agent can provide information about version, license and copyrigth from free osskb.org service or by an on premisse server for SCANOSS Platform.
 
